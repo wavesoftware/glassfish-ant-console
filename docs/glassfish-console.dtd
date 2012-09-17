@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/glassfish-console.dtd
+
+-->
+
+<!--- root -->
+<!ELEMENT glassfish-console (security)>
+<!ATTLIST glassfish-console
+    xsi:schemaLocation CDATA #IMPLIED
+    xmlns:xsi CDATA #IMPLIED
+    xmlns CDATA #IMPLIED
+  >
+
+<!--- Security -->
+<!ELEMENT security (realm)>
+
+<!--- realm definition -->
+<!ELEMENT realm (re-create?,name,class,jaas-context,datasource-jndi,user-table,user-name-column,password-column,group-table,group-name-column,(charset|encoding|digestrealm-password-enc-algorithm|digest-algorithm|db-password|db-user|assign-groups|group-table-user-name-column)*)>
+
+<!--- 
+	If added realm will be re created
+ -->
+<!ELEMENT re-create EMPTY>
+
+<!--- 
+	A short name for the realm. This name is used to  refer
+    to the realm from, for example, web.xml.
+ -->
+<!ELEMENT name (#PCDATA)>
+
+<!--- 
+	Java class which implements this realm.  These  include
+	com.sun.enterprise.security.auth.realm.file.FileRealm,
+	com.sun.enterprise.security.auth.realm.certificate.CertificateRealm,
+	com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm,
+	com.sun.enterprise.security.auth.realm.ldap.LDAPRealm,
+	com.sun.enterprise.security.auth.realm.ldap.PamRealm,
+	and
+	com.sun.enterprise.security.auth.realm.solaris.SolarisRealm,
+	or a custom realm.
+ -->
+<!ELEMENT class (#PCDATA)>
+
+<!--- 
+	Specifies the Java Authentication  and  Authoriza-
+	tion Service (JAAS) context.
+ -->
+<!ELEMENT jaas-context (#PCDATA)>
+
+<!--- 
+	Specifies the jndi-name of the jdbc-resource for
+    the database.
+ -->
+<!ELEMENT datasource-jndi (#PCDATA)>
+
+<!--- 
+	Specifies the name of  the  user  table  in  the
+    database.
+ -->
+<!ELEMENT user-table (#PCDATA)>
+
+<!--- 
+	Specifies the name of the user  name  column  in
+    the database's user table.
+ -->
+<!ELEMENT user-name-column (#PCDATA)>
+
+<!--- 
+	Specifies the name of the password column in the
+	database's user table.
+ -->
+<!ELEMENT password-column (#PCDATA)>
+
+<!--- 
+	Specifies the name of the  group  table  in  the
+	database.
+ -->
+<!ELEMENT group-table (#PCDATA)>
+
+<!--- 
+	Specifies the name of the group name  column  in
+	the database's group table.
+ -->
+<!ELEMENT group-name-column (#PCDATA)>
+
+<!--- 
+	Name  of the  column in the user group table  that 
+	contains the list of groups for this realm  
+ -->
+<!ELEMENT group-table-user-name-column (#PCDATA)>
+
+<!--- 
+	(Optional) If this property is set, its  value  is
+	taken to be a comma-separated list of group names.
+	All clients who  present  valid  certificates  are
+	assigned  membership  to these groups for the pur-
+	poses of authorization decisions in  the  web  and
+	EJB containers.
+-->
+<!ELEMENT assign-groups (#PCDATA)>
+
+<!--- 
+	(Optional) Allows you to  specify  the  database
+	user  name  in  the  realm  instead of the jdbc-
+	connection-pool. This  prevents  other  applica-
+	tions  from  looking  up the database, getting a
+	connection, and  browsing  the  user  table.  By
+	default,  the jdbc-connection-pool configuration
+	is used.
+ -->
+<!ELEMENT db-user (#PCDATA)>
+
+<!--- 
+	(Optional) Allows you to  specify  the  database
+	password  in  the  realm  instead  of  the jdbc-
+	connection-pool. This  prevents  other  applica-
+	tions  from  looking  up the database, getting a
+	connection, and  browsing  the  user  table.  By
+	default,  the jdbc-connection-pool configuration
+	is used.
+ -->
+<!ELEMENT db-password (#PCDATA)>
+
+<!--- 
+	(Optional) Specifies the digest  algorithm.  The
+	default  is  SHA-256.  You can use any algorithm
+	supported in the JDK, or none.
+ -->
+<!ELEMENT digest-algorithm (#PCDATA)>
+
+<!--- 
+	(Optional) Specifies the algorithm for  encrypt-
+	ing passwords stored in the database.
+
+	Note
+
+	It is a security risk not to specify a  password
+	encryption algorithm.
+ -->
+<!ELEMENT digestrealm-password-enc-algorithm (#PCDATA)>
+
+<!--- 
+	(Optional)  Specifies  the   encoding.   Allowed
+	values  are  Hex and Base64. If digest-algorithm
+	is specified, the default  is  Hex.  If  digest-
+	algorithm is not specified, by default no encod-
+	ing is specified.
+ -->
+<!ELEMENT encoding (#PCDATA)>
+
+<!--- 
+	(Optional) Specifies the charset for the  digest
+    algorithm.
+ -->
+<!ELEMENT charset (#PCDATA)>
