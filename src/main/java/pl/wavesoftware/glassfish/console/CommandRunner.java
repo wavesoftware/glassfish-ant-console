@@ -21,37 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package pl.wavesoftware.glassfish.console.enums;
+package pl.wavesoftware.glassfish.console;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Krzysztof Suszyński <krzysztof.suszynski@gmail.com>
  */
-public class ConsoleActionsTest {
-	
-	@Test
-	public void testValues() {
-		ConsoleActions[] expResult = {ConsoleActions.CREATE, ConsoleActions.DELETE, ConsoleActions.LIST, ConsoleActions.AUTO};
-		ConsoleActions[] result = ConsoleActions.values();
-		assertArrayEquals(expResult, result);
-	}
+public interface CommandRunner {
 
-	@Test
-	public void testValueOf() {
-		String name = "LIST";
-		ConsoleActions expResult = ConsoleActions.LIST;
-		ConsoleActions result = ConsoleActions.valueOf(name);
-		assertEquals(expResult, result);
-	}
+	List<String> getFilteredErrorsList(List<Pattern> include, List<Pattern> exclude);
 
-	@Test
-	public void testToString() {
-		ConsoleActions instance = ConsoleActions.AUTO;
-		String expResult = "AUTO";
-		String result = instance.toString();
-		assertEquals(expResult, result);
-	}
+	List<String> getFilteredErrorsList(Pattern[] include, Pattern[] exclude);
+
+	List<String> getFilteredOutputList(List<Pattern> include, List<Pattern> exclude);
+
+	List<String> getFilteredOutputList(Pattern[] include, Pattern[] exclude);
+
+	List<String> getErrorList();
+
+	List<String> getOutputList();
+
+	String getFilteredErrors(List<Pattern> include, List<Pattern> exclude);
+
+	String getFilteredErrors(Pattern[] include, Pattern[] exclude);
+
+	String getErrors();
+
+	String getFilteredOutput(List<Pattern> include, List<Pattern> exclude);
+
+	String getFilteredOutput(Pattern[] include, Pattern[] exclude);
+
+	String getOutput();
+
+	int run() throws IOException, InterruptedException;
+
+	void setCommand(String command);
+
+	void useAsAdmin(String installDir);
 }

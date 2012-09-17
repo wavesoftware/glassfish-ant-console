@@ -2,9 +2,9 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>pl.wavesoftware.glassfish</groupId>
+	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>glassfish-ant-console</name>
@@ -32,7 +32,7 @@
 				</configuration>
 				<executions>
 					<execution>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>cobertura</goal>
 						</goals>
@@ -44,7 +44,7 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<configuration>
 							<target>
 								<property name="maven.project.url" value="${project.url}" />
@@ -61,6 +61,7 @@
 	</build>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<netbeans.hint.license>mit</netbeans.hint.license>
 	</properties>
 
 	<dependencies>

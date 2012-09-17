@@ -1,21 +1,48 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * The MIT License
+ *
+ * Copyright 2012 Krzysztof Suszyński <krzysztof.suszynski@gmail.com>.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package pl.wavesoftware.glassfish.console.tasks;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.glassfish.ant.tasks.AdminTask;
+import pl.wavesoftware.glassfish.console.CommandRunner;
+import pl.wavesoftware.glassfish.console.CommandRunnerImpl;
 import pl.wavesoftware.glassfish.console.enums.ConsoleActions;
 import pl.wavesoftware.glassfish.console.enums.RealmTypes;
 
 /**
  *
- * @author ksuszyns
+ * @author Krzysztof Suszyński <krzysztof.suszynski@gmail.com>
  */
 public class AuthRealmTask extends AdminTask {
 
@@ -31,6 +58,8 @@ public class AuthRealmTask extends AdminTask {
 
 	private Map<String, String> readedPeroperties;
 
+	private CommandRunner runner;
+
 	public void setAction(String action) {
 		this.action = ConsoleActions.valueOf(action.toUpperCase());
 	}
@@ -38,18 +67,105 @@ public class AuthRealmTask extends AdminTask {
 	public void setType(String type) {
 		this.type = RealmTypes.valueOf(type.toUpperCase());
 	}
-
+	
 	public AuthRealmTask() {
 		super();
 		UseProperties up = new UseProperties();
 		up.setPrefix(DEFAULT_PREFIX);
 		this.useProperties.add(up);
 	}
-
+	
+	public static String getConsoleCommand(ConsoleActions action) {
+		switch (action) {
+			case CREATE:
+				return "create-auth-realm";
+			case DELETE:
+				return "delete-auth-realm";
+			case LIST:
+				return "list-auth-realms";
+			default:
+				return null;
+		}
+	}
+	
 	@Override
 	public void execute() throws BuildException {
 		String compiledCommand = prepareParams();
-		super.execute(compiledCommand);
+		if (compiledCommand == null) {
+			return;
+		}
+		CommandRunner runnerInst = getCommandRunner();
+		runnerInst.useAsAdmin(getInstallDir());
+		runnerInst.setCommand(compiledCommand);
+		try {
+			int exitVal = runnerInst.run();
+			if (exitVal != 0) {
+				log("Command exited with error code " + exitVal, Project.MSG_WARN);
+			}
+			if (!runnerInst.getOutput().equals("")) {
+				String out = runnerInst.getFilteredOutput(null, new Pattern[]{Pattern.compile("executed successfully")});
+				log(out);
+			}
+			if (!runnerInst.getErrors().equals("")) {
+				log(runnerInst.getErrors(), Project.MSG_ERR);
+			}
+		} catch (IOException ex) {
+			throw new BuildException(ex);
+		} catch (InterruptedException ex) {
+			throw new BuildException(ex);
+		}
+	}
+
+	String prepareParams() {
+		String inheritedCommand = getCommand();
+		switch (action) {
+			case AUTO:
+				doAutomaticAction(inheritedCommand);
+				return null;
+			case LIST:
+				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+				break;
+			case CREATE:
+				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+				addCreateParams();
+				break;
+			case DELETE:
+				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+				addDeleteParams();
+				break;
+		}
+		return getCommand();
+	}
+
+	private void doAutomaticAction(String inheritedCommand) {
+		AuthRealmTask createTask = new AuthRealmTask();
+		createTask.setInstallDir(getInstallDir());
+		createTask.setProject(getProject());
+		createTask.setCommandRunner(runner);
+		createTask.setCommand(inheritedCommand);
+		createTask.setType(type.toString());
+		createTask.setAction(ConsoleActions.CREATE.toString());
+		AuthRealmTask deleteTask = new AuthRealmTask();
+		deleteTask.setInstallDir(getInstallDir());
+		deleteTask.setProject(getProject());
+		deleteTask.setCommandRunner(runner);
+		deleteTask.setCommand(inheritedCommand);
+		deleteTask.setType(type.toString());
+		deleteTask.setAction(ConsoleActions.DELETE.toString());
+		try {
+			if (isRealmCreated()) {
+				if (shouldRecreateRealm()) {
+					deleteTask.execute();
+					createTask.execute();
+				}
+			} else {
+				createTask.execute();
+			}
+		} catch (IOException ex) {
+			log(ex.getMessage());
+		} catch (InterruptedException ex) {
+			log(ex.getMessage());
+		}
 	}
 
 	public void addUseProperties(UseProperties useProperties) {
@@ -97,7 +213,11 @@ public class AuthRealmTask extends AdminTask {
 				Object object = entry.getValue();
 				if (key.startsWith(useProperty.prefix)) {
 					String stripped = key.substring(useProperty.prefix.length());
-					readedPeroperties.put(stripped, object.toString());
+					if (object == null) {
+						readedPeroperties.put(stripped, null);
+					} else {
+						readedPeroperties.put(stripped, object.toString());
+					}
 				}
 			}
 		}
@@ -199,11 +319,6 @@ public class AuthRealmTask extends AdminTask {
 		addCommandOperand(name);
 	}
 
-	private void doAutomaticAction(String inheritedCommand) {
-		// TODO: implement method
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
 	private void setPreserveCommand(String command, String inheritedCommand) {
 		StringBuilder out = new StringBuilder();
 		out.append(inheritedCommand.trim());
@@ -230,25 +345,38 @@ public class AuthRealmTask extends AdminTask {
 		return sb.toString();
 	}
 
-	String prepareParams() {
-		String inheritedCommand = getCommand();
-		switch (action) {
-			case AUTO:
-				doAutomaticAction(inheritedCommand);
-				break;
-			case LIST:
-				setPreserveCommand("list-auth-realms", inheritedCommand);
-				break;
-			case CREATE:
-				setPreserveCommand("create-auth-realm", inheritedCommand);
-				addCreateParams();
-				break;
-			case DELETE:
-				setPreserveCommand("delete-auth-realm", inheritedCommand);
-				addDeleteParams();
-				break;
+	private boolean isRealmCreated() throws IOException, InterruptedException {
+		runner.setCommand(("list-auth-realms " + getCommand()).trim());
+		runner.useAsAdmin(getInstallDir());
+		int result = runner.run();
+		if (result != 0) {
+			throw new IOException(runner.getErrors());
 		}
-		return getCommand();
+		Pattern include = Pattern.compile(Pattern.quote(getRequiredProperty("name")));
+		Pattern[] includes = {include};
+		Pattern[] excludes = {Pattern.compile("list-auth-realms")};
+		List<String> filtered = runner.getFilteredOutputList(includes, excludes);
+		return filtered.size() == 1;
+	}
+
+	private boolean shouldRecreateRealm() {
+		return isPropertySet("re-create");
+	}
+
+	private boolean isPropertySet(String name) {
+		Map<String, String> props = getProperties();
+		return props.containsKey(name);
+	}
+
+	private CommandRunner getCommandRunner() {
+		if (this.runner == null) {
+			this.runner = new CommandRunnerImpl("");
+		}
+		return this.runner;
+	}
+	
+	void setCommandRunner(CommandRunner runner) {
+		this.runner = runner;
 	}
 
 	public static class UseProperties {
