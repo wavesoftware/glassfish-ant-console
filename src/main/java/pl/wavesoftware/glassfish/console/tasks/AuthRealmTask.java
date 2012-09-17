@@ -73,6 +73,7 @@ public class AuthRealmTask extends AdminTask {
 		UseProperties up = new UseProperties();
 		up.setPrefix(DEFAULT_PREFIX);
 		this.useProperties.add(up);
+		getCommandRunner();
 	}
 	
 	public static String getConsoleCommand(ConsoleActions action) {
@@ -94,20 +95,24 @@ public class AuthRealmTask extends AdminTask {
 		if (compiledCommand == null) {
 			return;
 		}
-		CommandRunner runnerInst = getCommandRunner();
-		runnerInst.useAsAdmin(getInstallDir());
-		runnerInst.setCommand(compiledCommand);
+		runner.useAsAdmin(getInstallDir());
+		runner.setCommand(compiledCommand);
 		try {
-			int exitVal = runnerInst.run();
+			int exitVal = runner.run();
+			setTaskName(getTaskName() + ":" + action.name());
+			if (!runner.getOutput().equals("")) {
+				String out = runner.getFilteredOutput(null, new Pattern[]{Pattern.compile("executed successfully")});
+				if (!out.equals("")) {
+					log(out);
+				}
+			}
 			if (exitVal != 0) {
 				log("Command exited with error code " + exitVal, Project.MSG_WARN);
+			} else {
+				log("done");
 			}
-			if (!runnerInst.getOutput().equals("")) {
-				String out = runnerInst.getFilteredOutput(null, new Pattern[]{Pattern.compile("executed successfully")});
-				log(out);
-			}
-			if (!runnerInst.getErrors().equals("")) {
-				log(runnerInst.getErrors(), Project.MSG_ERR);
+			if (!runner.getErrors().equals("")) {
+				log(runner.getErrors(), Project.MSG_ERR);
 			}
 		} catch (IOException ex) {
 			throw new BuildException(ex);
@@ -139,16 +144,18 @@ public class AuthRealmTask extends AdminTask {
 
 	private void doAutomaticAction(String inheritedCommand) {
 		AuthRealmTask createTask = new AuthRealmTask();
+		createTask.setCommandRunner(runner);
+		createTask.setTaskName(getTaskName());
 		createTask.setInstallDir(getInstallDir());
 		createTask.setProject(getProject());
-		createTask.setCommandRunner(runner);
 		createTask.setCommand(inheritedCommand);
 		createTask.setType(type.toString());
 		createTask.setAction(ConsoleActions.CREATE.toString());
 		AuthRealmTask deleteTask = new AuthRealmTask();
+		deleteTask.setCommandRunner(runner);
+		deleteTask.setTaskName(getTaskName());
 		deleteTask.setInstallDir(getInstallDir());
 		deleteTask.setProject(getProject());
-		deleteTask.setCommandRunner(runner);
 		deleteTask.setCommand(inheritedCommand);
 		deleteTask.setType(type.toString());
 		deleteTask.setAction(ConsoleActions.DELETE.toString());
@@ -346,7 +353,8 @@ public class AuthRealmTask extends AdminTask {
 	}
 
 	private boolean isRealmCreated() throws IOException, InterruptedException {
-		runner.setCommand(("list-auth-realms " + getCommand()).trim());
+		String listCommand = getConsoleCommand(ConsoleActions.LIST);
+		runner.setCommand((listCommand + " " + getCommand()).trim());
 		runner.useAsAdmin(getInstallDir());
 		int result = runner.run();
 		if (result != 0) {
@@ -354,7 +362,7 @@ public class AuthRealmTask extends AdminTask {
 		}
 		Pattern include = Pattern.compile(Pattern.quote(getRequiredProperty("name")));
 		Pattern[] includes = {include};
-		Pattern[] excludes = {Pattern.compile("list-auth-realms")};
+		Pattern[] excludes = {Pattern.compile(listCommand)};
 		List<String> filtered = runner.getFilteredOutputList(includes, excludes);
 		return filtered.size() == 1;
 	}
