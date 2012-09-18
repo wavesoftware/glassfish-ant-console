@@ -11,7 +11,7 @@ Tasks
 
 Added tasks:
 
- * `glassfish-auth-realm` [[ read help | task-glassfish-auth-realm ]]
+ * `glassfish-auth-realm` [read help](https://github.com/wavesoftware/glassfish-ant-console/wiki/task-glassfish-auth-realm)
 
 Oracle tasks included (these are not described here):
 
