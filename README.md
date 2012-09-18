@@ -72,3 +72,16 @@ Sample xml with properties:
 	</security>
 </glassfish-console>
 ```
+
+Installation
+------------
+
+For now only Maven is supported. Use maven-ant-tasks for ease.
+
+```xml
+<dependency>
+	<groupId>com.github.wavesoftware</groupId>
+	<artifactId>glassfish-ant-console</artifactId>
+	<version>0.1.2</version>
+</dependency>
+```
