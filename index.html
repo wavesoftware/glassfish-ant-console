@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>glassfish-ant-console by wavesoftware</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>glassfish-ant-console</h1>
+        <p>Glassfish 3 Ant console tasks</p>
+        <p class="view"><a href="https://github.com/wavesoftware/glassfish-ant-console">View the Project on GitHub <small>wavesoftware/glassfish-ant-console</small></a></p>
+        <ul>
+          <li><a href="https://github.com/wavesoftware/glassfish-ant-console/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/wavesoftware/glassfish-ant-console/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/wavesoftware/glassfish-ant-console">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><a href="http://travis-ci.org/wavesoftware/glassfish-ant-console"><img src="https://secure.travis-ci.org/wavesoftware/glassfish-ant-console.png" alt="Build Status"></a></p>
+
+<h2>Introduction</h2>
+
+<p>Project has the goal of adding the ability to integrate with <em>Glassfish 3 Application Server</em> server from <em>ANT</em> tasks. 
+It adds some tasks for <code>auth-realm</code>, <code>resource</code>, <code>pool</code> to standard tasks supplied by <em>Oracle</em> in <code>glassfish-ant-tasks</code> project.</p>
+
+<h2>Tasks</h2>
+
+<p>Added tasks:</p>
+
+<ul>
+<li>
+<code>glassfish-auth-realm</code> <a href="https://github.com/wavesoftware/glassfish-ant-console/wiki/task-glassfish-auth-realm">read help</a>
+</li>
+</ul><p>Oracle tasks included (these are not described here):</p>
+
+<p><code>glassfish-embedded-deploy</code>, <code>glassfish-embedded-stop</code>, <code>glassfish-embedded-start</code>, <code>glassfish-embedded-admin</code>, <code>glassfish-embedded-undeploy</code>, <code>glassfish-admin</code>, <code>glassfish-start</code>, <code>glassfish-stop</code>, <code>glassfish-deploy</code>, <code>glassfish-undeploy</code>, <code>glassfish-redeploy</code>, <code>glassfish-component</code>, <code>sun-appserv-admin</code>, <code>sun-appserv-start</code>, <code>sun-appserv-stop</code>, <code>sun-appserv-deploy</code>, <code>sun-appserv-undeploy</code>, <code>sun-appserv-redeploy</code>, <code>sun-appserv-update</code>, <code>sun-appserv-component</code></p>
+
+<h2>Example</h2>
+
+<p>Example usage using <a href="http://maven.apache.org/ant-tasks/index.html">maven-ant-tasks</a>:</p>
+
+<div class="highlight"><pre><span class="nt">&lt;target</span> <span class="na">name=</span><span class="s">"-deploy-auth-realm"</span> <span class="na">depends=</span><span class="s">"init,-mvn-bootstrap"</span><span class="nt">&gt;</span>
+    <span class="c">&lt;!-- loads lib from maven repo --&gt;</span>
+    <span class="nt">&lt;artifact:dependencies</span> <span class="na">pathId=</span><span class="s">"libs.glassfish-ant-console.classpath"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;dependency</span> 
+            <span class="na">groupId=</span><span class="s">"com.github.wavesoftware"</span> 
+            <span class="na">artifactId=</span><span class="s">"glassfish-ant-console"</span> 
+            <span class="na">version=</span><span class="s">"0.1.1-SNAPSHOT"</span> 
+            <span class="na">type=</span><span class="s">"jar"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/artifact:dependencies&gt;</span>
+    <span class="nt">&lt;typedef</span> 
+        <span class="na">resource=</span><span class="s">"com/github/wavesoftware/glassfish/ant/tasks/antlib.xml"</span>
+        <span class="na">classpathref=</span><span class="s">"libs.glassfish-ant-console.classpath"</span> <span class="nt">/&gt;</span>
+    <span class="c">&lt;!-- reads properties from xml --&gt;</span>
+    <span class="nt">&lt;xmlproperty</span> <span class="na">file=</span><span class="s">"${basedir}/setup/glassfish-console.xml"</span> <span class="nt">/&gt;</span>
+    <span class="c">&lt;!-- action="auto" means that realm will be automatically created/recreated --&gt;</span>
+    <span class="nt">&lt;glassfish-auth-realm</span> 
+        <span class="na">type=</span><span class="s">"jdbc"</span> 
+        <span class="na">action=</span><span class="s">"auto"</span> 
+        <span class="na">installDir=</span><span class="s">"${j2ee.server.home}"</span><span class="nt">&gt;</span>
+        <span class="c">&lt;!-- prefix: glassfish-console.security.realm is used automatically --&gt;</span>
+        <span class="nt">&lt;useProperties</span> <span class="na">prefix=</span><span class="s">"mycustom.realm"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"re-create"</span> <span class="na">value=</span><span class="s">"yes"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/glassfish-auth-realm&gt;</span>
+<span class="nt">&lt;/target&gt;</span>
+<span class="nt">&lt;target</span> <span class="na">name=</span><span class="s">"-post-run-deploy"</span> <span class="na">depends=</span><span class="s">"-deploy-auth-realm"</span> <span class="nt">/&gt;</span>
+</pre></div>
+
+<p>Sample xml with properties:</p>
+
+<div class="highlight"><pre><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="cp">&lt;!DOCTYPE glassfish-console SYSTEM "https://raw.github.com/wavesoftware/glassfish-ant-console/master/docs/glassfish-console.dtd"&gt;</span>
+<span class="nt">&lt;glassfish-console&gt;</span>
+    <span class="nt">&lt;security&gt;</span>
+        <span class="nt">&lt;realm&gt;</span>
+            <span class="nt">&lt;name&gt;</span>JDBC_realm<span class="nt">&lt;/name&gt;</span>
+            <span class="nt">&lt;class&gt;</span>com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm<span class="nt">&lt;/class&gt;</span>
+            <span class="nt">&lt;jaas-context&gt;</span>jdbcRealm<span class="nt">&lt;/jaas-context&gt;</span>
+            <span class="nt">&lt;datasource-jndi&gt;</span>jdbc/MyApp<span class="nt">&lt;/datasource-jndi&gt;</span>
+            <span class="nt">&lt;user-table&gt;</span>users<span class="nt">&lt;/user-table&gt;</span>
+            <span class="nt">&lt;user-name-column&gt;</span>login<span class="nt">&lt;/user-name-column&gt;</span>
+            <span class="nt">&lt;password-column&gt;</span>password<span class="nt">&lt;/password-column&gt;</span>
+            <span class="nt">&lt;group-table&gt;</span>user_group<span class="nt">&lt;/group-table&gt;</span>
+            <span class="nt">&lt;group-name-column&gt;</span>group_name<span class="nt">&lt;/group-name-column&gt;</span>
+            <span class="nt">&lt;group-table-user-name-column&gt;</span>user_name<span class="nt">&lt;/group-table-user-name-column&gt;</span>
+            <span class="nt">&lt;digest-algorithm&gt;</span>MD5<span class="nt">&lt;/digest-algorithm&gt;</span>
+        <span class="nt">&lt;/realm&gt;</span>
+    <span class="nt">&lt;/security&gt;</span>
+<span class="nt">&lt;/glassfish-console&gt;</span>
+</pre></div>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/wavesoftware">wavesoftware</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
