@@ -12,14 +12,19 @@
 			<arg value="-p"/>
 			<arg value="${build.dir}/test/reports/cloc"/>
 		</exec>
+		<echo file="${build.dir}/cloc.files">${basedir}/src
+${basedir}/docs
+${basedir}/build.xml
+${basedir}/pom.xml
+		</echo>
 		<exec executable="/usr/bin/cloc" dir="${basedir}" osfamily="unix" failonerror="true">
-			<arg value="--exclude-dir=build,target,dist,nbproject,tmp,.hg,.idea"/>
+			<arg value="--list-file=${build.dir}/cloc.files"/>
 			<arg value="--csv"/>
 			<arg value="--out=${build.dir}/test/reports/cloc.csv"/>
 			<arg value="${basedir}"/>
 		</exec>
 		<exec executable="/usr/bin/cloc" dir="${basedir}" osfamily="unix" failonerror="true">
-			<arg value="--exclude-dir=build,target,dist,nbproject,tmp,.hg,.idea"/>
+			<arg value="--list-file=${build.dir}/cloc.files"/>
 			<arg value="--xml"/>
 			<arg value="--out=${build.dir}/test/reports/cloc.xml"/>
 			<arg value="${basedir}"/>
