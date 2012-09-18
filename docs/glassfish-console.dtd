@@ -19,7 +19,7 @@
 <!ELEMENT security (realm)>
 
 <!--- realm definition -->
-<!ELEMENT realm (re-create?,name,class,jaas-context,datasource-jndi,user-table,user-name-column,password-column,group-table,group-name-column,(charset|encoding|digestrealm-password-enc-algorithm|digest-algorithm|db-password|db-user|assign-groups|group-table-user-name-column)*)>
+<!ELEMENT realm (re-create?,name,jaas-context,datasource-jndi,user-table,user-name-column,password-column,group-table,group-name-column,(charset|encoding|digestrealm-password-enc-algorithm|digest-algorithm|db-password|db-user|assign-groups|group-table-user-name-column|class)*)>
 
 <!--- 
 	If added realm will be re created
