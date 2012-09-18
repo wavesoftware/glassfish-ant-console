@@ -4,7 +4,7 @@
 
 	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.1.2</version>
+	<version>0.1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Glassfish extended ANT tasks</name>
