@@ -29,7 +29,7 @@ Example usage using [maven-ant-tasks](http://maven.apache.org/ant-tasks/index.ht
 		<dependency 
 			groupId="com.github.wavesoftware" 
 			artifactId="glassfish-ant-console" 
-			version="0.1.3" 
+			version="0.1.4" 
 			type="jar" />
 	</artifact:dependencies>
 	<typedef 
