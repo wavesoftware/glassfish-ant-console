@@ -3,7 +3,7 @@
 
 	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.1.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Glassfish extended ANT tasks</name>
@@ -106,10 +106,9 @@
 			<version>1.8.4</version>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.main.packager</groupId>
-			<artifactId>glassfish-ant-tasks</artifactId>
-			<version>3.1.2</version>
-			<type>zip</type>
+			<groupId>org.glassfish</groupId>
+			<artifactId>ant-tasks</artifactId>
+			<version>3.1.1</version>
 		</dependency>
 	</dependencies>
 </project>
