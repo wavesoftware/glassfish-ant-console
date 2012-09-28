@@ -82,6 +82,6 @@ For now only Maven is supported. Use maven-ant-tasks for ease.
 <dependency>
 	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.1.3</version>
+	<version>0.1.4</version>
 </dependency>
 ```
