@@ -54,8 +54,8 @@ Sample xml with properties:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE glassfish-console SYSTEM "https://raw.github.com/wavesoftware/glassfish-ant-console/master/docs/glassfish-console.dtd">
-<glassfish-console>
+<glassfish-console xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xsi:noNamespaceSchemaLocation="https://raw.github.com/wavesoftware/glassfish-ant-console/master/docs/glassfish-console.xsd">
 	<security>
 		<realm>
 			<name>JDBC_realm</name>

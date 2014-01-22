@@ -1,0 +1,31 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="glassfish-console">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="security">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="realm">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="name"/>
+                    <xs:element type="xs:string" name="class"/>
+                    <xs:element type="xs:string" name="jaas-context"/>
+                    <xs:element type="xs:string" name="datasource-jndi"/>
+                    <xs:element type="xs:string" name="user-table" nillable="true"/>
+                    <xs:element type="xs:string" name="user-name-column" nillable="true"/>
+                    <xs:element type="xs:string" name="password-column" nillable="true"/>
+                    <xs:element type="xs:string" name="group-table" nillable="true" />
+                    <xs:element type="xs:string" name="group-name-column" nillable="true" />
+                    <xs:element type="xs:string" name="group-table-user-name-column" nillable="true" />
+                    <xs:element type="xs:string" name="digest-algorithm" nillable="true" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
