@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -43,390 +44,402 @@ import org.glassfish.ant.tasks.AdminTask;
  */
 public class AuthRealmTask extends AdminTask {
 
-	private ConsoleActions action = ConsoleActions.AUTO;
+    private ConsoleActions action = ConsoleActions.AUTO;
 
-	private RealmTypes type;
+    private RealmTypes type;
 
-	private List<UseProperties> useProperties = new ArrayList<UseProperties>();
+    private List<UseProperties> useProperties = new ArrayList<UseProperties>();
 
-	private List<Property> properties = new ArrayList<Property>();
+    private List<Property> properties = new ArrayList<Property>();
 
-	private final String DEFAULT_PREFIX = "glassfish-console.security.realm";
+    private final String DEFAULT_PREFIX = "glassfish-console.security.realm";
 
-	private Map<String, String> readedPeroperties;
+    private Map<String, String> readedPeroperties;
 
-	private CommandRunner runner;
+    private CommandRunner runner;
 
-	public void setAction(String action) {
-		this.action = ConsoleActions.valueOf(action.toUpperCase());
-	}
+    public void setAction(String action) {
+        this.action = ConsoleActions.valueOf(action.toUpperCase());
+    }
 
-	public void setType(String type) {
-		this.type = RealmTypes.valueOf(type.toUpperCase());
-	}
-	
-	public AuthRealmTask() {
-		super();
-		UseProperties up = new UseProperties();
-		up.setPrefix(DEFAULT_PREFIX);
-		this.useProperties.add(up);
-		getCommandRunner();
-	}
-	
-	public static String getConsoleCommand(ConsoleActions action) {
-		switch (action) {
-			case CREATE:
-				return "create-auth-realm";
-			case DELETE:
-				return "delete-auth-realm";
-			case LIST:
-				return "list-auth-realms";
-			default:
-				return null;
-		}
-	}
-	
-	@Override
-	public void execute() throws BuildException {
-		String compiledCommand = prepareParams();
-		if (compiledCommand == null) {
-			return;
-		}
-		runner.useAsAdmin(getInstallDir());
-		runner.setCommand(compiledCommand);
-		try {
-			int exitVal = runner.run();
-			setTaskName(getTaskName() + ":" + action.name());
-			if (!runner.getOutput().equals("")) {
-				String out = runner.getFilteredOutput(null, new Pattern[]{Pattern.compile("executed successfully")});
-				if (!out.equals("")) {
-					log(out);
-				}
-			}
-			if (exitVal != 0) {
-				log("Command exited with error code " + exitVal, Project.MSG_WARN);
-			} else {
-				log("done");
-			}
-			if (!runner.getErrors().equals("")) {
-				log(runner.getErrors(), Project.MSG_ERR);
-			}
-		} catch (IOException ex) {
-			throw new BuildException(ex);
-		} catch (InterruptedException ex) {
-			throw new BuildException(ex);
-		}
-	}
+    public void setType(String type) {
+        this.type = RealmTypes.valueOf(type.toUpperCase());
+    }
 
-	String prepareParams() {
-		String inheritedCommand = getCommand();
-		switch (action) {
-			case AUTO:
-				doAutomaticAction(inheritedCommand);
-				return null;
-			case LIST:
-				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
-				break;
-			case CREATE:
-				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
-				addCreateParams();
-				break;
-			case DELETE:
-				setPreserveCommand(getConsoleCommand(action), inheritedCommand);
-				addDeleteParams();
-				break;
-		}
-		return getCommand();
-	}
+    public AuthRealmTask() {
+        super();
+        UseProperties up = new UseProperties();
+        up.setPrefix(DEFAULT_PREFIX);
+        this.useProperties.add(up);
+        getCommandRunner();
+    }
 
-	private void doAutomaticAction(String inheritedCommand) {
-		AuthRealmTask createTask = new AuthRealmTask();
-		createTask.setCommandRunner(runner);
-		createTask.setTaskName(getTaskName());
-		createTask.setInstallDir(getInstallDir());
-		createTask.setProject(getProject());
-		createTask.setCommand(inheritedCommand);
-		createTask.setType(type.toString());
-		createTask.setAction(ConsoleActions.CREATE.toString());
-		AuthRealmTask deleteTask = new AuthRealmTask();
-		deleteTask.setCommandRunner(runner);
-		deleteTask.setTaskName(getTaskName());
-		deleteTask.setInstallDir(getInstallDir());
-		deleteTask.setProject(getProject());
-		deleteTask.setCommand(inheritedCommand);
-		deleteTask.setType(type.toString());
-		deleteTask.setAction(ConsoleActions.DELETE.toString());
-		try {
-			if (isRealmCreated()) {
-				if (shouldRecreateRealm()) {
-					deleteTask.execute();
-					createTask.execute();
-				}
-			} else {
-				createTask.execute();
-			}
-		} catch (IOException ex) {
-			log(ex.getMessage());
-		} catch (InterruptedException ex) {
-			log(ex.getMessage());
-		}
-	}
+    public static String getConsoleCommand(ConsoleActions action) {
+        switch (action) {
+            case CREATE:
+                return "create-auth-realm";
+            case DELETE:
+                return "delete-auth-realm";
+            case LIST:
+                return "list-auth-realms";
+            default:
+                return null;
+        }
+    }
 
-	public void addUseProperties(UseProperties useProperties) {
-		this.useProperties.add(useProperties);
-	}
+    @Override
+    public void execute() throws BuildException {
+        String compiledCommand = prepareParams();
+        if (compiledCommand == null) {
+            return;
+        }
+        runner.useAsAdmin(getInstallDir());
+        runner.setCommand(compiledCommand);
+        try {
+            int exitVal = runner.run();
+            setTaskName(getTaskName() + ":" + action.name());
+            if (!runner.getOutput().equals("")) {
+                String out = runner.getFilteredOutput(null, new Pattern[]{Pattern.compile("executed successfully")});
+                if (!"".equals(out)) {
+                    log(out);
+                }
+            }
+            if (exitVal != 0) {
+                log("Command exited with error code " + exitVal, Project.MSG_WARN);
+            } else {
+                log("done");
+            }
+            if (!runner.getErrors().equals("")) {
+                log(runner.getErrors(), Project.MSG_ERR);
+            }
+        } catch (IOException ex) {
+            throw new BuildException(ex);
+        } catch (InterruptedException ex) {
+            throw new BuildException(ex);
+        }
+    }
 
-	public void addProperty(Property property) {
-		properties.add(property);
-	}
+    String prepareParams() {
+        String inheritedCommand = getCommand();
+        switch (action) {
+            case AUTO:
+                doAutomaticAction(inheritedCommand);
+                return null;
+            case LIST:
+                setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+                break;
+            case CREATE:
+                setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+                addCreateParams();
+                break;
+            case DELETE:
+                setPreserveCommand(getConsoleCommand(action), inheritedCommand);
+                addDeleteParams();
+                break;
+        }
+        return getCommand();
+    }
 
-	private String getProperty(String name) {
-		return getProperty(name, null);
-	}
+    private void doAutomaticAction(String inheritedCommand) {
+        AuthRealmTask createTask = new AuthRealmTask();
+        createTask.setCommandRunner(runner);
+        createTask.setTaskName(getTaskName());
+        createTask.setInstallDir(getInstallDir());
+        createTask.setProject(getProject());
+        createTask.setCommand(inheritedCommand);
+        createTask.setType(type.toString());
+        createTask.setAction(ConsoleActions.CREATE.toString());
+        AuthRealmTask deleteTask = new AuthRealmTask();
+        deleteTask.setCommandRunner(runner);
+        deleteTask.setTaskName(getTaskName());
+        deleteTask.setInstallDir(getInstallDir());
+        deleteTask.setProject(getProject());
+        deleteTask.setCommand(inheritedCommand);
+        deleteTask.setType(type.toString());
+        deleteTask.setAction(ConsoleActions.DELETE.toString());
+        try {
+            if (isRealmCreated()) {
+                if (shouldRecreateRealm()) {
+                    deleteTask.execute();
+                    createTask.execute();
+                }
+            } else {
+                createTask.execute();
+            }
+        } catch (IOException ex) {
+            log(ex.getMessage());
+        } catch (InterruptedException ex) {
+            log(ex.getMessage());
+        }
+    }
 
-	private String getRequiredProperty(String name) {
-		String prop = getProperty(name, null);
-		if (prop == null) {
-			throw new IllegalArgumentException("Property named \"" + name + "\" is required");
-		}
-		return prop;
-	}
+    public void addUseProperties(UseProperties useProperties) {
+        this.useProperties.add(useProperties);
+    }
 
-	private String getProperty(String name, String defaultValue) {
-		Map<String, String> props = getProperties();
-		if (!props.containsKey(name)) {
-			return defaultValue;
-		}
-		return props.get(name);
-	}
+    public void addProperty(Property property) {
+        properties.add(property);
+    }
 
-	private Map<String, String> getProperties() {
-		if (readedPeroperties == null) {
-			readedPeroperties = new HashMap<String, String>();
-			readUses();
-			readProperties();
-		}
-		return readedPeroperties;
-	}
+    private String getProperty(String name) {
+        return getProperty(name, null);
+    }
 
-	private void readUses() {
-		Map<Object, Object> all = getProject().getProperties();
-		for (UseProperties useProperty : useProperties) {
-			for (Map.Entry<Object, Object> entry : all.entrySet()) {
-				String key = entry.getKey().toString();
-				Object object = entry.getValue();
-				if (key.startsWith(useProperty.prefix)) {
-					String stripped = key.substring(useProperty.prefix.length());
-					if (object == null) {
-						readedPeroperties.put(stripped, null);
-					} else {
-						readedPeroperties.put(stripped, object.toString());
-					}
-				}
-			}
-		}
-	}
+    private String getRequiredProperty(String name) {
+        String prop = getProperty(name, null);
+        if (prop == null) {
+            throw new IllegalArgumentException("Property named \"" + name + "\" is required");
+        }
+        return prop;
+    }
 
-	private void readProperties() {
-		for (Property property : properties) {
-			readedPeroperties.put(property.name, property.value);
-		}
-	}
+    private String getProperty(String name, String defaultValue) {
+        Map<String, String> props = getProperties();
+        if (!props.containsKey(name)) {
+            return defaultValue;
+        }
+        return props.get(name);
+    }
 
-	private void addCreateParams() {
-		String clazz = "";
-		List<String> requiredProperties = new ArrayList<String>();
-		List<String> optionalProperties = new ArrayList<String>();
-		requiredProperties.add("jaas-context");
-		optionalProperties.add("assign-groups");
-		switch (type) {
-			case FILE:
-				clazz = "com.sun.enterprise.security.auth.realm.file.FileRealm";
-				requiredProperties.add("file");
-				break;
-			case CERTIFICATE:
-				clazz = "com.sun.enterprise.security.auth.realm.certificate.CertificateRealm";
-				requiredProperties.add("LoginModule");
-				break;
-			case JDBC:
-				clazz = "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
-				requiredProperties.add("datasource-jndi");
-				requiredProperties.add("user-table");
-				requiredProperties.add("user-name-column");
-				requiredProperties.add("password-column");
-				requiredProperties.add("group-table");
-				requiredProperties.add("group-name-column");
+    private Map<String, String> getProperties() {
+        if (readedPeroperties == null) {
+            readedPeroperties = new HashMap<String, String>();
+            readUses();
+            readProperties();
+        }
+        return readedPeroperties;
+    }
 
-				optionalProperties.add("charset");
-				optionalProperties.add("encoding");
-				optionalProperties.add("digestrealm-password-enc-algorithm");
-				optionalProperties.add("digest-algorithm");
-				optionalProperties.add("db-password");
-				optionalProperties.add("db-user");
-				optionalProperties.add("assign-groups");
-				optionalProperties.add("group-table-user-name-column");
-				break;
-			case LDAP:
-				clazz = "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm";
-				requiredProperties.add("directory");
-				requiredProperties.add("base-dn");
+    private void readUses() {
+        Set<Map.Entry<String, Object>> all = getProject().getProperties().entrySet();
+        for (UseProperties useProperty : useProperties) {
+            for (Map.Entry<String, Object> entry : all) {
+                String key = entry.getKey();
+                Object object = entry.getValue();
+                if (key.startsWith(useProperty.getPrefix())) {
+                    String stripped = key.substring(useProperty.getPrefix().length());
+                    if (object == null) {
+                        readedPeroperties.put(stripped, null);
+                    } else {
+                        readedPeroperties.put(stripped, object.toString());
+                    }
+                }
+            }
+        }
+    }
 
-				optionalProperties.add("search-filter");
-				optionalProperties.add("group-base-dn");
-				optionalProperties.add("group-search-filter");
-				optionalProperties.add("group-target");
-				optionalProperties.add("search-bind-dn");
-				optionalProperties.add("search-bind-password");
-				break;
-			case PAM:
-				clazz = "com.sun.enterprise.security.auth.realm.ldap.PamRealm";
-				break;
-			case SOLARIS:
-				clazz = "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
-				break;
-			case CUSTOM:
-				clazz = getRequiredProperty("class");
-				for (Map.Entry<String, String> entry : getProperties().entrySet()) {
-					String key = entry.getKey();
-					if (!key.equals("class") && !key.equals("name")) {
-						optionalProperties.add(key);
-					}
-				}
-		}
-		addCommandParameter("classname", clazz);
-		HashMap<String, String> targetProperties = new HashMap<String, String>();
-		for (String propertName : requiredProperties) {
-			useRequiredProperty(targetProperties, propertName);
-		}
-		for (String propertyName : optionalProperties) {
-			useOptionalProperty(targetProperties, propertyName);
-		}
-		String propertyString = joinProperties(targetProperties);
-		addCommandParameter("property", propertyString);
-		addCommandOperand(getRequiredProperty("name"));
-	}
+    private void readProperties() {
+        for (Property property : properties) {
+            readedPeroperties.put(property.getName(), property.getValue());
+        }
+    }
 
-	private void useRequiredProperty(Map<String, String> set, String name) {
-		String prop = getRequiredProperty(name);
-		set.put(name, prop);
-	}
+    private void addCreateParams() {
+        String clazz = "";
+        List<String> requiredProperties = new ArrayList<String>();
+        List<String> optionalProperties = new ArrayList<String>();
+        requiredProperties.add("jaas-context");
+        optionalProperties.add("assign-groups");
+        switch (type) {
+            case FILE:
+                clazz = "com.sun.enterprise.security.auth.realm.file.FileRealm";
+                requiredProperties.add("file");
+                break;
+            case CERTIFICATE:
+                clazz = "com.sun.enterprise.security.auth.realm.certificate.CertificateRealm";
+                requiredProperties.add("LoginModule");
+                break;
+            case JDBC:
+                clazz = "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
+                requiredProperties.add("datasource-jndi");
+                requiredProperties.add("user-table");
+                requiredProperties.add("user-name-column");
+                requiredProperties.add("password-column");
+                requiredProperties.add("group-table");
+                requiredProperties.add("group-name-column");
 
-	private void useOptionalProperty(Map<String, String> set, String name) {
-		String prop = getProperty(name);
-		if (prop != null) {
-			set.put(name, prop);
-		}
-	}
+                optionalProperties.add("charset");
+                optionalProperties.add("encoding");
+                optionalProperties.add("digestrealm-password-enc-algorithm");
+                optionalProperties.add("digest-algorithm");
+                optionalProperties.add("db-password");
+                optionalProperties.add("db-user");
+                optionalProperties.add("assign-groups");
+                optionalProperties.add("group-table-user-name-column");
+                break;
+            case LDAP:
+                clazz = "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm";
+                requiredProperties.add("directory");
+                requiredProperties.add("base-dn");
 
-	private void addDeleteParams() {
-		String name = getRequiredProperty("name");
-		addCommandOperand(name);
-	}
+                optionalProperties.add("search-filter");
+                optionalProperties.add("group-base-dn");
+                optionalProperties.add("group-search-filter");
+                optionalProperties.add("group-target");
+                optionalProperties.add("search-bind-dn");
+                optionalProperties.add("search-bind-password");
+                break;
+            case PAM:
+                clazz = "com.sun.enterprise.security.auth.realm.ldap.PamRealm";
+                break;
+            case SOLARIS:
+                clazz = "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
+                break;
+            case CUSTOM:
+                clazz = getRequiredProperty("class");
+                for (Map.Entry<String, String> entry : getProperties().entrySet()) {
+                    String key = entry.getKey();
+                    if (!key.equals("class") && !key.equals("name")) {
+                        optionalProperties.add(key);
+                    }
+                }
+        }
+        addCommandParameter("classname", clazz);
+        HashMap<String, String> targetProperties = new HashMap<String, String>();
+        for (String propertName : requiredProperties) {
+            useRequiredProperty(targetProperties, propertName);
+        }
+        for (String propertyName : optionalProperties) {
+            useOptionalProperty(targetProperties, propertyName);
+        }
+        String propertyString = joinProperties(targetProperties);
+        addCommandParameter("property", propertyString);
+        addCommandOperand(getRequiredProperty("name"));
+    }
 
-	private void setPreserveCommand(String command, String inheritedCommand) {
-		StringBuilder out = new StringBuilder();
-		out.append(inheritedCommand.trim());
-		if (out.length() != 0) {
-			out.append(" ");
-		}
-		out.append(command);
-		setCommand(out.toString());
-	}
+    private void useRequiredProperty(Map<String, String> set, String name) {
+        String prop = getRequiredProperty(name);
+        set.put(name, prop);
+    }
 
-	private String joinProperties(HashMap<String, String> targetProperties) {
-		StringBuilder sb = new StringBuilder();
-		List<String> firstJoin = new ArrayList<String>();
-		for (Map.Entry<String, String> entry : targetProperties.entrySet()) {
-			String name = entry.getKey();
-			String value = entry.getValue();
-			firstJoin.add(name + "=" + value);
-		}
-		for (String pair : firstJoin) {
-			sb.append(pair);
-			sb.append(":");
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		return sb.toString();
-	}
+    private void useOptionalProperty(Map<String, String> set, String name) {
+        String prop = getProperty(name);
+        if (prop != null) {
+            set.put(name, prop);
+        }
+    }
 
-	private boolean isRealmCreated() throws IOException, InterruptedException {
-		String listCommand = getConsoleCommand(ConsoleActions.LIST);
-		runner.setCommand((listCommand + " " + getCommand()).trim());
-		runner.useAsAdmin(getInstallDir());
-		int result = runner.run();
-		if (result != 0) {
-			throw new IOException(runner.getErrors());
-		}
-		Pattern include = Pattern.compile(Pattern.quote(getRequiredProperty("name")));
-		Pattern[] includes = {include};
-		Pattern[] excludes = {Pattern.compile(listCommand)};
-		List<String> filtered = runner.getFilteredOutputList(includes, excludes);
-		return filtered.size() == 1;
-	}
+    private void addDeleteParams() {
+        String name = getRequiredProperty("name");
+        addCommandOperand(name);
+    }
 
-	private boolean shouldRecreateRealm() {
-		return isPropertySet("re-create");
-	}
+    private void setPreserveCommand(String command, String inheritedCommand) {
+        StringBuilder out = new StringBuilder();
+        out.append(inheritedCommand.trim());
+        if (out.length() != 0) {
+            out.append(" ");
+        }
+        out.append(command);
+        setCommand(out.toString());
+    }
 
-	private boolean isPropertySet(String name) {
-		Map<String, String> props = getProperties();
-		return props.containsKey(name);
-	}
+    private String joinProperties(Map<String, String> targetProperties) {
+        StringBuilder sb = new StringBuilder();
+        List<String> firstJoin = new ArrayList<String>();
+        for (Map.Entry<String, String> entry : targetProperties.entrySet()) {
+            String name = entry.getKey();
+            String value = entry.getValue();
+            firstJoin.add(name + "=" + value);
+        }
+        for (String pair : firstJoin) {
+            sb.append(pair);
+            sb.append(":");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
 
-	private CommandRunner getCommandRunner() {
-		if (this.runner == null) {
-			this.runner = new CommandRunnerImpl("");
-		}
-		return this.runner;
-	}
-	
-	void setCommandRunner(CommandRunner runner) {
-		this.runner = runner;
-	}
+    private boolean isRealmCreated() throws IOException, InterruptedException {
+        String listCommand = getConsoleCommand(ConsoleActions.LIST);
+        runner.setCommand((listCommand + " " + getCommand()).trim());
+        runner.useAsAdmin(getInstallDir());
+        int result = runner.run();
+        if (result != 0) {
+            throw new IOException(runner.getErrors());
+        }
+        Pattern include = Pattern.compile(Pattern.quote(getRequiredProperty("name")));
+        Pattern[] includes = {include};
+        Pattern[] excludes = {Pattern.compile(listCommand)};
+        List<String> filtered = runner.getFilteredOutputList(includes, excludes);
+        return filtered.size() == 1;
+    }
 
-	public static class UseProperties {
+    private boolean shouldRecreateRealm() {
+        return isPropertySet("re-create");
+    }
 
-		private String prefix;
+    private boolean isPropertySet(String name) {
+        Map<String, String> props = getProperties();
+        return props.containsKey(name);
+    }
 
-		public void setPrefix(String prefix) {
-			this.prefix = prefix;
-			if (!prefix.endsWith(".")) {
-				this.prefix += ".";
-			}
-		}
-	}
+    private CommandRunner getCommandRunner() {
+        if (this.runner == null) {
+            this.runner = new CommandRunnerImpl("");
+        }
+        return this.runner;
+    }
 
-	public static class Property {
+    void setCommandRunner(CommandRunner runner) {
+        this.runner = runner;
+    }
 
-		private String name;
+    public static class UseProperties {
 
-		private String value;
+        private String prefix;
 
-		/**
-		 * Set the value of name
-		 *
-		 * @param name new value of name
-		 */
-		public void setName(String name) {
-			this.name = name;
-		}
+        private String getPrefix() {
+            return prefix;
+        }
 
-		/**
-		 * Set the value of text
-		 *
-		 * @param value new value of text
-		 */
-		public void setValue(String value) {
-			this.value = value;
-		}
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+            if (!prefix.endsWith(".")) {
+                this.prefix += ".";
+            }
+        }
+    }
 
-		/**
-		 * Set the value of text
-		 *
-		 * @param text new value of text
-		 */
-		public void addText(String text) {
-			this.value = text;
-		}
-	}
+    public static class Property {
+
+        private String name;
+
+        private String value;
+
+        private String getName() {
+            return name;
+        }
+
+        private String getValue() {
+            return value;
+        }
+
+        /**
+         * Set the value of name
+         *
+         * @param name new value of name
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * Set the value of text
+         *
+         * @param value new value of text
+         */
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        /**
+         * Set the value of text
+         *
+         * @param text new value of text
+         */
+        public void addText(String text) {
+            this.value = text;
+        }
+    }
 }

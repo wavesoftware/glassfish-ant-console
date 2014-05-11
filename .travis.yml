@@ -1,7 +1,4 @@
 language: java
-script: mvn clean verify
+script: mvn clean verify -Pci
 notifications:
   email: false
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq cloc libxml-xpath-perl
