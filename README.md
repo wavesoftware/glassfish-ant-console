@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/wavesoftware/glassfish-ant-console.png)](http://travis-ci.org/wavesoftware/glassfish-ant-console)
+[![Build Status](https://secure.travis-ci.org/wavesoftware/glassfish-ant-console.png)](http://travis-ci.org/wavesoftware/glassfish-ant-console) [![Coverage Status](https://coveralls.io/repos/wavesoftware/glassfish-ant-console/badge.png?branch=master)](https://coveralls.io/r/wavesoftware/glassfish-ant-console?branch=master)
 
 Introduction
 ------------
@@ -29,7 +29,7 @@ Example usage using [maven-ant-tasks](http://maven.apache.org/ant-tasks/index.ht
 		<dependency 
 			groupId="com.github.wavesoftware" 
 			artifactId="glassfish-ant-console" 
-			version="0.1.4" 
+			version="0.1.5" 
 			type="jar" />
 	</artifact:dependencies>
 	<typedef 
@@ -83,6 +83,6 @@ For now only Maven is supported. Use maven-ant-tasks for ease.
 <dependency>
 	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.1.4</version>
+	<version>0.1.5</version>
 </dependency>
 ```
