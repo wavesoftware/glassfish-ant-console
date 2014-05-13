@@ -29,7 +29,7 @@ Example usage using [maven-ant-tasks](http://maven.apache.org/ant-tasks/index.ht
 		<dependency 
 			groupId="com.github.wavesoftware" 
 			artifactId="glassfish-ant-console" 
-			version="0.1.5" 
+			version="0.1.6" 
 			type="jar" />
 	</artifact:dependencies>
 	<typedef 
@@ -83,6 +83,6 @@ For now only Maven is supported. Use maven-ant-tasks for ease.
 <dependency>
 	<groupId>com.github.wavesoftware</groupId>
 	<artifactId>glassfish-ant-console</artifactId>
-	<version>0.1.5</version>
+	<version>0.1.6</version>
 </dependency>
 ```
