@@ -242,15 +242,15 @@ public class AuthRealmTask extends AdminTask {
         optionalProperties.add("assign-groups");
         switch (type) {
             case FILE:
-                clazz = "com.sun.enterprise.security.auth.realm.file.FileRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.auth.realm.file.FileRealm");
                 requiredProperties.add("file");
                 break;
             case CERTIFICATE:
-                clazz = "com.sun.enterprise.security.auth.realm.certificate.CertificateRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.auth.realm.certificate.CertificateRealm");
                 requiredProperties.add("LoginModule");
                 break;
             case JDBC:
-                clazz = "com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.ee.realm.jdbc.JDBCRealm");
                 requiredProperties.add("datasource-jndi");
                 requiredProperties.add("user-table");
                 requiredProperties.add("user-name-column");
@@ -268,7 +268,7 @@ public class AuthRealmTask extends AdminTask {
                 optionalProperties.add("group-table-user-name-column");
                 break;
             case LDAP:
-                clazz = "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.auth.realm.ldap.LDAPRealm");
                 requiredProperties.add("directory");
                 requiredProperties.add("base-dn");
 
@@ -280,10 +280,10 @@ public class AuthRealmTask extends AdminTask {
                 optionalProperties.add("search-bind-password");
                 break;
             case PAM:
-                clazz = "com.sun.enterprise.security.auth.realm.ldap.PamRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.ee.realm.ldap.PamRealm");
                 break;
             case SOLARIS:
-                clazz = "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm";
+                clazz = getProperty("class", "com.sun.enterprise.security.auth.realm.solaris.SolarisRealm");
                 break;
             case CUSTOM:
                 clazz = getRequiredProperty("class");

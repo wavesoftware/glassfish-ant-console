@@ -170,14 +170,22 @@
                                 <id>jacoco-initialize</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>jacoco-initialize-it</id>
+                                <goals>
                                     <goal>prepare-agent-integration</goal>
                                 </goals>
+                                <configuration>
+                                    <append>true</append>
+                                    <destFile>${project.build.directory}/jacoco.exec</destFile>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>jacoco-site</id>
                                 <goals>
                                     <goal>report</goal>
-                                    <goal>report-integration</goal>
                                 </goals>
                             </execution>
                         </executions>

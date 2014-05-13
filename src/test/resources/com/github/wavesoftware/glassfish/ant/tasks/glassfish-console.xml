@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glassfish-console xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:noNamespaceSchemaLocation="https://raw.github.com/wavesoftware/glassfish-ant-console/master/docs/glassfish-console.xsd">
+    <security>
+        <realm>
+            <name>JDBC_myproject</name>
+            <class>com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm</class>
+            <jaas-context>jdbcRealm</jaas-context>
+            <datasource-jndi>jdbc/MyProject</datasource-jndi>
+            <user-table>users</user-table>
+            <user-name-column>username</user-name-column>
+            <password-column>password</password-column>
+            <group-table>groups</group-table>
+            <group-name-column>group_name</group-name-column>
+            <group-table-user-name-column>username</group-table-user-name-column>
+            <digest-algorithm>none</digest-algorithm>
+        </realm>
+    </security>
+</glassfish-console>
